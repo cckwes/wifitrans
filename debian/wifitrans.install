@@ -1,0 +1,4 @@
+desktop/*	/usr/share/applications/
+file/*	/opt/wifitrans/file/
+icon/*	/usr/share/icons/hicolor/80x80/apps/
+src/*	/opt/wifitrans/bin/
