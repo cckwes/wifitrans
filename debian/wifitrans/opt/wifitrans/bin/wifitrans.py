@@ -4,6 +4,7 @@ import sys
 import BaseHTTPServer
 import SimpleHTTPServer
 import SocketServer
+import cgi
 import os
 import cStringIO
 import re
@@ -15,6 +16,8 @@ import threading
 import shutil
 import random
 import string
+import urlparse
+import zipfile
 from PySide.QtCore import *
 from PySide.QtGui import *
 from PySide.QtDeclarative import *
@@ -27,6 +30,7 @@ class centerClass(QObject):
 		self.approvedIP = list()
 		self.blackListedIP = list()
 		self.passwd = ''.join(random.choice(string.ascii_lowercase + string.ascii_uppercase + string.digits) for x in range(6))
+		self.showPhotoThumb = False
 
 	def checkBlackListed(self, ipAddr):
 		if str(ipAddr) in self.blackListedIP:
@@ -55,7 +59,47 @@ class centerClass(QObject):
 	@Slot(result=unicode)
 	def getPassword(self):
 		return self.passwd
-
+		
+	@Slot(result=int)
+	def getWhiteLength(self):
+		return len(self.approvedIP)
+		
+	@Slot(result=int)
+	def getBlackLength(self):
+		return len(self.blackListedIP)
+	
+	def checkPhotoThumb(self):
+		return self.showPhotoThumb
+	
+	@Slot(str)
+	def setPhotoThumb(self, thumb):
+		if (thumb == "true"):
+			self.showPhotoThumb = True
+		else:
+			self.showPhotoThumb = False
+		
+	@Slot(int,result=unicode)
+	def getWhiteItem(self, itemIndex):
+		if itemIndex < self.getWhiteLength():
+			return self.approvedIP[itemIndex]
+		else:
+			return
+	
+	@Slot(int,result=unicode)
+	def getBlackItem(self, itemIndex):
+		if itemIndex < self.getBlackLength():
+			return self.blackListedIP[itemIndex]
+		else:
+			return
+	
+	@Slot(str)
+	def removeWhiteItem(self, whiteItem):
+		self.approvedIP.remove(whiteItem)
+	
+	@Slot(str)
+	def removeBlackItem(self, blackItem):
+		self.blackListedIP.remove(blackItem)
+		
 class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 	cc = centerClass()
 	global approvedIP
@@ -79,7 +123,7 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			
 		disp = cStringIO.StringIO()
 		disp.write('<!DOCTYPE html>\n<html><head><title>%s</title>\n<link rel="stylesheet" href="/wifitrans/main.css" type="text/css" />\n</head>\n\
-		<body>\n<header>\n<div id="title">\n<h1>%s</h1>\n</div>\n</header>\n<article>\n<ul>\n' % (dirpath,dirpath))
+		<body>\n<header>\n<div id="title">\n<h1>%s</h1>\n</div>\n</header>\n<article>\n<section class="archive">\n<a href="?method=a">Download folder as a zip file</a>\n</section>\n<ul>\n' % (dirpath,dirpath))
 		for r in listing:
 			mimetype, _ = mimetypes.guess_type(r)
 			#print r
@@ -95,7 +139,10 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/wifitrans/unknown.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
 			elif mimetype.startswith('image'):
 				#image file
-				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/wifitrans/image-x-generic.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
+				if cc.checkPhotoThumb():
+					disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="%s" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r,r) )
+				else:
+					disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/wifitrans/image-x-generic.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
 			elif mimetype.startswith('video'):
 				#video file
 				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/wifitrans/video-x-generic.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
@@ -109,7 +156,18 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/wifitrans/application-pdf.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
 			else:
 				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/wifitrans/unknown.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
-		disp.write('</ul>\n</article>\n</body>\n</html>')
+		disp.write('</ul>\n<div class="form">\n\
+		<form id="upload" action="" method="POST" enctype="multipart/form-data">\n\
+		<fieldset>\n\
+		<legend>Upload to this folder</legend>\n\
+		<div>\n<label for="fileselect">Files to upload:</label>\n<input type="file" id="fileselect" name="fileselect[]" multiple="multiple" />\n<div id="filedrag">or drop files here</div>\n\
+		</div>\n\
+		<div id="submitbutton">\n<button type="submit">Upload Files</button>\n\
+		</div>\n\
+		</fieldset>\n\
+		</form>\n\
+		</div>\n<div id="progress"></div>\n<div id="messages">\n<p>Status Messages</p>\n</div>\n\
+		</article>\n<script src="/wifitrans/filedrag.js"></script>\n</body>\n</html>')
 		disp.seek(0)
 		self.send_response(200)
 		self.send_header('Content-type', 'text/html')
@@ -127,7 +185,14 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 		m = re.match(r'^Basic (.*)$', auth_header)
 		
 		#print self.client_ip
-        
+		#get the parameter of GET
+		self.qs = {}
+		self.showPath = self.path
+		if '?' in self.showPath:
+			self.showPath, tmp = self.showPath.split('?', 1)
+			self.qs = urlparse.parse_qs(tmp)
+		print self.showPath, self.qs
+		
 		if m is not None:
 			auth_data = m.group(1).decode('base64').split(':', 1)
 			if len(auth_data) == 2:
@@ -143,10 +208,36 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 				self.wfile.close()
 			elif cc.checkIP(self.client_ip):
 				#print self.client_ip
-				if self.path.endswith('/'):
-					self.listDirectory(self.path)
-				else:
-					SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)	
+				try:
+					if self.qs['method'] == ['a/']:
+						#folder archive
+						zipFilename = 'wifitrans/folder.zip'
+						zip = zipfile.ZipFile(zipFilename, 'w')
+						self.zipPath = "/home/user/MyDocs" + self.showPath
+						#print self.zipPath
+						for dirname, subdirs, files in os.walk(self.zipPath):
+							zip.write(dirname)
+							print dirname
+							for filename in files:
+								zip.write(os.path.join(dirname, filename))
+						zip.close()
+						filepath = "/home/user/MyDocs/wifitrans/folder.zip"
+						f = open(filepath, 'rb')
+						self.send_response(200)
+						self.send_header('Content-type', 'application/octet-stream')
+						self.send_header('Content-Disposition', 'attachment; filename="folder.zip"')
+						self.end_headers()
+						self.wfile.write(f.read())
+						f.close()
+					elif self.path.endswith('/'):
+						self.listDirectory(self.showPath)
+					else:
+						SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+				except KeyError:
+					if self.path.endswith('/'):
+						self.listDirectory(self.showPath)
+					else:
+						SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 			else:
 				cc.requestIPAuth.emit(self.client_ip)
 				self.send_response(200)
@@ -162,6 +253,40 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			self.wfile.write('401 Access denied')
 			self.wfile.close()
 			return
+	
+	def do_POST(self):
+		try:
+			ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
+			
+			if ctype == 'multipart/form-data':
+				fs = cgi.FieldStorage( fp = self.rfile, headers = self.headers, environ={ 'REQUEST_METHOD':'POST' })
+			else: raise Exception("Unexpected POST request")
+			
+			fs_up = fs['fileselect']
+			#print fs_up
+			filename = os.path.split(fs_up.filename)[1] # strip the path, if it presents
+			currentPath = "/home/user/MyDocs" + self.path
+			fullname = os.path.join(currentPath, filename)
+			
+			if os.path.exists( fullname ):
+				fullname_test = fullname + '.copy'
+				i = 0
+				while os.path.exists( fullname_test ):
+				    fullname_test = "%s.copy(%d)" % (fullname, i)
+				    i += 1
+				fullname = fullname_test
+			if not os.path.exists(fullname):
+				with open(fullname, 'wb') as o:
+				    # self.copyfile(fs['upfile'].file, o)
+				    o.write( fs_up.file.read() )
+				    #print fullname
+				    #print os.path.split(fullname)[1]
+				    
+			self.send_response(200)
+			self.end_headers()
+			SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+		except Exception as e:
+			print e
 
 class serverControl(QObject):
 	def __init__(self):
@@ -232,7 +357,7 @@ if __name__== "__main__":
 		print("Directory /home/user/MyDocs/wifitrans created")
 	
 	#copy files
-	fileList = ['application-x-compress.png', 'audio-x-generic.png', 'inode-directory.png', 'text-x-generic.png', 'unknown.png', 'video-x-generic.png', 'main.css', 'application-pdf.png', 'image-x-generic.png']
+	fileList = ['application-x-compress.png', 'audio-x-generic.png', 'inode-directory.png', 'text-x-generic.png', 'unknown.png', 'video-x-generic.png', 'main.css', 'application-pdf.png', 'image-x-generic.png', 'filedrag.js', 'progress.png']
 	for f in fileList:
 		fullDestPath = '/home/user/MyDocs/wifitrans/' + f
 		fullSourcePath = '/opt/wifitrans/file/' + f

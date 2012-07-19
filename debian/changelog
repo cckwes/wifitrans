@@ -1,5 +1,12 @@
 wifitrans (0.1.0) unstable; urgency=low
 
   * Initial Release.
+  - Basic http authentication with fix username and random password
+  - IP approval or backlist after basic http authentication
+  - Folder archive option
+  - Upload to current folder option
+  - Image previewing option
+  - UI listing approved and blacklisted IP address
+  - UI for removing approved or blacklisted IP address
 
  -- linux4us <cckwes@gmail.com>  Sun, 15 Jul 2012 11:30:05 +0800

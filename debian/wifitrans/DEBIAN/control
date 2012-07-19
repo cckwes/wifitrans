@@ -2,7 +2,7 @@ Package: wifitrans
 Version: 0.1.0
 Architecture: armel
 Maintainer: linux4us <cckwes@gmail.com>
-Installed-Size: 288
+Installed-Size: 368
 Section: user/other
 Priority: optional
 Homepage: http://blog.linux4us.org

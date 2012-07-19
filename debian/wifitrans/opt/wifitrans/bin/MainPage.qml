@@ -47,7 +47,7 @@ Page {
         anchors.left: parent.left
         anchors.leftMargin: 20
         anchors.top: headerRect.bottom
-        anchors.topMargin: 50
+        anchors.topMargin: 30
     }
 
     Switch {
@@ -136,6 +136,7 @@ Page {
 
     QueryDialog {
         id: clientIPQuery
+        icon: "image://theme/icon-l-installing"
         titleText: "Client IP Approval"
         acceptButtonText: "Approve"
         rejectButtonText: "Reject"
