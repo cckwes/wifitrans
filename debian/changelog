@@ -1,3 +1,12 @@
+wifitrans (0.1.1) unstable; urgency=low
+
+  - Added IP address checking for file upload, prevent file upload from un-authorized IP.
+  - remove the folder.zip after it's transferred for space saving.
+  - added generate password / edit username and password button
+  - can choose between random password or user defined username and password
+
+ -- linux4us <cckwes@gmail.com>  Fri, 27 Jul 2012 10:00:05 +0800
+ 
 wifitrans (0.1.0) unstable; urgency=low
 
   * Initial Release.

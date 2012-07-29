@@ -1,8 +1,9 @@
 Package: wifitrans
-Version: 0.1.0
+Version: 0.1.1
 Architecture: armel
 Maintainer: linux4us <cckwes@gmail.com>
-Installed-Size: 368
+Installed-Size: 372
+Depends: python, python-pyside.qtcore, python-pyside.qtgui, python-pyside.qtdeclarative
 Section: user/other
 Priority: optional
 Homepage: http://blog.linux4us.org

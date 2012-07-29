@@ -37,7 +37,7 @@ Page {
 
     Label {
         id: version
-        text: "v0.1.0"
+        text: "v0.1.1"
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: appName.bottom
         anchors.topMargin: 20

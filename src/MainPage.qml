@@ -10,8 +10,17 @@ Page {
 
     property string ipAddr;
     property string clientIP;
+    property bool custom;
+    property string username;
+    property string password;
 
     Component.onCompleted: {
+        appWindow.custom = cControl.getCustomUP();
+        //get the username and password
+        appWindow.username = cControl.getUsername();
+        appWindow.password = cControl.getPassword();
+
+        //get ip address
         if (sControl.retrieveIP() != "") {
             appWindow.ipAddr = "http://" + sControl.retrieveIP() + ":8080";
         } else {
@@ -103,7 +112,7 @@ Page {
     
     Text {
         id: usernameLabel
-        text: "n9user"
+        text: appWindow.username
 	anchors.top: userLabel.bottom
 	anchors.topMargin: 20
 	anchors.right: parent.right
@@ -124,7 +133,7 @@ Page {
     
     Text {
         id: passwordLabel
-        text: cControl.getPassword()
+        text: appWindow.password
 	anchors.top: passLabel.bottom
 	anchors.topMargin: 20
 	anchors.right: parent.right
@@ -132,6 +141,127 @@ Page {
 	font.weight: Font.Bold
 	font.pixelSize: 30
 	color: "white"
+    }
+
+    Button {
+        id: genEdBtn
+        anchors.top: passwordLabel.bottom
+        anchors.topMargin: 40
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: (appWindow.custom) ? "Edit Username, Password" : "Generate new Password"
+
+        onClicked: {
+            if (appWindow.custom) {
+                //edit username and password, bring up the sheet
+                editUserPass.open();
+            } else {
+                cControl.generatePassword();
+                appWindow.password = cControl.getPassword();
+            }
+        }
+    }
+
+    ButtonRow {
+        id: customBtnRow
+        anchors.top: genEdBtn.bottom
+        anchors.topMargin: 40
+        anchors.horizontalCenter: parent.horizontalCenter
+        checkedButton: (appWindow.custom) ? customBtn : generateBtn
+        Button {
+            id: customBtn
+            text: "Custom"
+            onClicked: {
+                appWindow.custom = true;
+                cControl.loadCustom();
+                cControl.storeCustom(true);
+                appWindow.username = cControl.getUsername();
+                appWindow.password = cControl.getPassword();
+            }
+        }
+        Button {
+            id: generateBtn
+            text: "Generated"
+            onClicked: {
+                appWindow.custom = false;
+                cControl.unloadCustom();
+                cControl.storeCustom(false);
+                appWindow.username = cControl.getUsername();
+                appWindow.password = cControl.getPassword();
+            }
+        }
+    }
+
+    SipAttributes {
+        id: nextAttrib
+        actionKeyLabel: "Next"
+        actionKeyEnabled: true
+    }
+
+    SipAttributes {
+        id: saveAttrib
+        actionKeyLabel: "Save"
+        actionKeyEnabled: true
+    }
+
+    Sheet {
+        id: editUserPass
+
+        acceptButtonText: "Save"
+        rejectButtonText: "Cancel"
+        visualParent: appWindow
+
+        content: Flickable {
+            anchors.fill: parent
+            anchors.margins: 40
+            Column {
+                spacing: 10
+                width: parent.width
+
+                Label {
+                    text: "Username"
+                }
+
+                TextField {
+                    id: usernameInput
+                    maximumLength: 20
+                    platformSipAttributes: nextAttrib
+                    width: parent.width
+                    text: appWindow.username
+
+                    Keys.onReturnPressed: passwordInput.forceActiveFocus()
+                }
+
+                Label {
+                    text: "Password"
+                }
+
+                TextField {
+                    id: passwordInput
+                    maximumLength: 12
+                    //echoMode: TextInput.PasswordEchoOnEdit
+                    platformSipAttributes: saveAttrib
+                    width: parent.width
+                    text: appWindow.password
+
+                    Keys.onReturnPressed: {
+                        passwordInput.platformCloseSoftwareInputPanel()
+                        editUserPass.accept();
+                    }
+                }
+            }
+        }
+
+        onAccepted: {
+            cControl.storeUsernamePass(usernameInput.text, passwordInput.text);
+            console.log("changed username to " + usernameInput.text + " and password to " + passwordInput.text);
+            appWindow.username = cControl.getUsername();
+            appWindow.password = cControl.getPassword();
+            editUserPass.close();
+        }
+
+        onRejected: {
+            editUserPass.close();
+        }
     }
 
     QueryDialog {

@@ -8,7 +8,7 @@ Homepage: http://blog.linux4us.org
 
 Package: wifitrans
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, python, python-pyside.qtcore, python-pyside.qtgui, python-pyside.qtdeclarative
 Description: A wifi file transfer utility for MeeGo
     File transfer application with http file server over wireless network
 XSBC-Maemo-Display-Name: wifitrans

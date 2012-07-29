@@ -29,8 +29,18 @@ class centerClass(QObject):
 		QObject.__init__(self)
 		self.approvedIP = list()
 		self.blackListedIP = list()
-		self.passwd = ''.join(random.choice(string.ascii_lowercase + string.ascii_uppercase + string.digits) for x in range(6))
+		self.passwd = ""
+		self.username = ""
 		self.showPhotoThumb = False
+		self.settings = QSettings("Linux4us", "WifiTrans")
+		self.customUP = self.getUsePassSettings()
+		if self.customUP:
+			#custom user name and password
+			self.username = self.loadCustomUsername()
+			self.passwd = self.loadCustomPassword()
+		else:
+			self.username = "n9user"
+			self.generatePassword()
 
 	def checkBlackListed(self, ipAddr):
 		if str(ipAddr) in self.blackListedIP:
@@ -59,6 +69,10 @@ class centerClass(QObject):
 	@Slot(result=unicode)
 	def getPassword(self):
 		return self.passwd
+		
+	@Slot(result=unicode)
+	def getUsername(self):
+		return self.username
 		
 	@Slot(result=int)
 	def getWhiteLength(self):
@@ -99,7 +113,59 @@ class centerClass(QObject):
 	@Slot(str)
 	def removeBlackItem(self, blackItem):
 		self.blackListedIP.remove(blackItem)
+	
+	@Slot()
+	def generatePassword(self):
+		self.passwd = ''.join(random.choice(string.ascii_lowercase + string.ascii_uppercase + string.digits) for x in range(6))
 		
+	def getUsePassSettings(self):
+		return bool(self.settings.value("customUP"))
+	
+	def loadCustomUsername(self):
+		if str(self.settings.value("username")) == "None":
+			#custom username not yet set
+			return "n9user"
+		else:
+			return str(self.settings.value("username"))
+	
+	def loadCustomPassword(self):
+		if str(self.settings.value("password")) == "None":
+			return "password"
+		else:
+			return str(self.settings.value("password"))
+	
+	@Slot(str, str)
+	def storeUsernamePass(self, usern, passw):
+		self.username = usern
+		self.passwd = passw
+		self.settings.setValue("username", usern)
+		self.settings.setValue("password", passw)
+	
+	@Slot(str)
+	def storeCustom(self, custom):
+		if (custom == "true"):
+			self.settings.setValue("customUP", True)
+		else:
+			self.settings.setValue("customUP", False)
+		
+	@Slot(bool)
+	def setCustomUP(self, custom):
+		self.customUP = custom
+		
+	@Slot(result=bool)
+	def getCustomUP(self):
+		return self.customUP
+		
+	@Slot()
+	def loadCustom(self):
+		self.username = self.loadCustomUsername()
+		self.passwd = self.loadCustomPassword()
+		
+	@Slot()
+	def unloadCustom(self):
+		self.username = "n9user"
+		self.generatePassword()
+
 class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 	cc = centerClass()
 	global approvedIP
@@ -122,40 +188,40 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			listing.insert(0, '..')
 			
 		disp = cStringIO.StringIO()
-		disp.write('<!DOCTYPE html>\n<html><head><title>%s</title>\n<link rel="stylesheet" href="/wifitrans/main.css" type="text/css" />\n</head>\n\
+		disp.write('<!DOCTYPE html>\n<html><head><title>%s</title>\n<link rel="stylesheet" href="/.wifitrans/main.css" type="text/css" />\n</head>\n\
 		<body>\n<header>\n<div id="title">\n<h1>%s</h1>\n</div>\n</header>\n<article>\n<section class="archive">\n<a href="?method=a">Download folder as a zip file</a>\n</section>\n<ul>\n' % (dirpath,dirpath))
 		for r in listing:
 			mimetype, _ = mimetypes.guess_type(r)
 			#print r
 			if os.path.isdir(os.path.join(abspath,r)):
 				#directory
-				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/wifitrans/inode-directory.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
+				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/.wifitrans/inode-directory.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
 				#print os.path.join(abspath,r)
 			elif r == '..':
 				# ..
-				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/wifitrans/inode-directory.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
+				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/.wifitrans/inode-directory.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
 			elif mimetype is None:
 				#none mimetype
-				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/wifitrans/unknown.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
+				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/.wifitrans/unknown.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
 			elif mimetype.startswith('image'):
 				#image file
 				if cc.checkPhotoThumb():
 					disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="%s" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r,r) )
 				else:
-					disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/wifitrans/image-x-generic.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
+					disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/.wifitrans/image-x-generic.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
 			elif mimetype.startswith('video'):
 				#video file
-				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/wifitrans/video-x-generic.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
+				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/.wifitrans/video-x-generic.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
 			elif mimetype.startswith('audio'):
 				#audio file
-				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/wifitrans/audio-x-generic.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
+				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/.wifitrans/audio-x-generic.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
 			elif mimetype.startswith('text'):
-				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/wifitrans/text-x-generic.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
+				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/.wifitrans/text-x-generic.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
 			elif mimetype.find('pdf') != -1:
 				#pdf file
-				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/wifitrans/application-pdf.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
+				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/.wifitrans/application-pdf.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
 			else:
-				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/wifitrans/unknown.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
+				disp.write('<li>\n<a href="%s">\n<div class="item">\n<img class="thumb" src="/.wifitrans/unknown.png" width="180">\n<div class="filename">%s</div>\n</div>\n</a>\n</li>\n' % (r,r) )
 		disp.write('</ul>\n<div class="form">\n\
 		<form id="upload" action="" method="POST" enctype="multipart/form-data">\n\
 		<fieldset>\n\
@@ -167,7 +233,7 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 		</fieldset>\n\
 		</form>\n\
 		</div>\n<div id="progress"></div>\n<div id="messages">\n<p>Status Messages</p>\n</div>\n\
-		</article>\n<script src="/wifitrans/filedrag.js"></script>\n</body>\n</html>')
+		</article>\n<script src="/.wifitrans/filedrag.js"></script>\n</body>\n</html>')
 		disp.seek(0)
 		self.send_response(200)
 		self.send_header('Content-type', 'text/html')
@@ -178,7 +244,7 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 	def do_GET(self):
 		authorized = False
-		user = 'n9user'
+		user = cc.getUsername()
 		passwod = cc.getPassword()
 		
 		auth_header = self.headers.getheader('authorization', '')
@@ -211,7 +277,7 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 				try:
 					if self.qs['method'] == ['a/']:
 						#folder archive
-						zipFilename = 'wifitrans/folder.zip'
+						zipFilename = '.wifitrans/folder.zip'
 						zip = zipfile.ZipFile(zipFilename, 'w')
 						self.zipPath = "/home/user/MyDocs" + self.showPath
 						#print self.zipPath
@@ -221,7 +287,7 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 							for filename in files:
 								zip.write(os.path.join(dirname, filename))
 						zip.close()
-						filepath = "/home/user/MyDocs/wifitrans/folder.zip"
+						filepath = "/home/user/MyDocs/.wifitrans/folder.zip"
 						f = open(filepath, 'rb')
 						self.send_response(200)
 						self.send_header('Content-type', 'application/octet-stream')
@@ -229,6 +295,8 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 						self.end_headers()
 						self.wfile.write(f.read())
 						f.close()
+						#remove the folder.zip for space saving
+						os.remove(filepath)
 					elif self.path.endswith('/'):
 						self.listDirectory(self.showPath)
 					else:
@@ -255,38 +323,46 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			return
 	
 	def do_POST(self):
-		try:
-			ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
-			
-			if ctype == 'multipart/form-data':
-				fs = cgi.FieldStorage( fp = self.rfile, headers = self.headers, environ={ 'REQUEST_METHOD':'POST' })
-			else: raise Exception("Unexpected POST request")
-			
-			fs_up = fs['fileselect']
-			#print fs_up
-			filename = os.path.split(fs_up.filename)[1] # strip the path, if it presents
-			currentPath = "/home/user/MyDocs" + self.path
-			fullname = os.path.join(currentPath, filename)
-			
-			if os.path.exists( fullname ):
-				fullname_test = fullname + '.copy'
-				i = 0
-				while os.path.exists( fullname_test ):
-				    fullname_test = "%s.copy(%d)" % (fullname, i)
-				    i += 1
-				fullname = fullname_test
-			if not os.path.exists(fullname):
-				with open(fullname, 'wb') as o:
-				    # self.copyfile(fs['upfile'].file, o)
-				    o.write( fs_up.file.read() )
-				    #print fullname
-				    #print os.path.split(fullname)[1]
-				    
+		if cc.checkIP(self.client_ip):
+			try:
+				ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
+				
+				if ctype == 'multipart/form-data':
+					fs = cgi.FieldStorage( fp = self.rfile, headers = self.headers, environ={ 'REQUEST_METHOD':'POST' })
+				else: raise Exception("Unexpected POST request")
+				
+				fs_up = fs['fileselect']
+				#print fs_up
+				filename = os.path.split(fs_up.filename)[1] # strip the path, if it presents
+				currentPath = "/home/user/MyDocs" + self.path
+				fullname = os.path.join(currentPath, filename)
+				
+				if os.path.exists( fullname ):
+					fullname_test = fullname + '.copy'
+					i = 0
+					while os.path.exists( fullname_test ):
+					    fullname_test = "%s.copy(%d)" % (fullname, i)
+					    i += 1
+					fullname = fullname_test
+				if not os.path.exists(fullname):
+					with open(fullname, 'wb') as o:
+					    # self.copyfile(fs['upfile'].file, o)
+					    o.write( fs_up.file.read() )
+					    #print fullname
+					    #print os.path.split(fullname)[1]
+					    
+				self.send_response(200)
+				self.end_headers()
+				SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+			except Exception as e:
+				print e
+		else:
 			self.send_response(200)
+			self.send_header('Content-type', 'text/html')
 			self.end_headers()
-			SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
-		except Exception as e:
-			print e
+			self.wfile.write('<div align="center"><h2>Not permitted.</h2></div>')
+			self.wfile.close()
+		
 
 class serverControl(QObject):
 	def __init__(self):
@@ -352,14 +428,14 @@ if __name__== "__main__":
 	view = QDeclarativeView()
 	
 	#create user directory
-	if not os.path.exists("/home/user/MyDocs/wifitrans"):
-		os.makedirs("/home/user/MyDocs/wifitrans")
-		print("Directory /home/user/MyDocs/wifitrans created")
+	if not os.path.exists("/home/user/MyDocs/.wifitrans"):
+		os.makedirs("/home/user/MyDocs/.wifitrans")
+		print("Directory /home/user/MyDocs/.wifitrans created")
 	
 	#copy files
 	fileList = ['application-x-compress.png', 'audio-x-generic.png', 'inode-directory.png', 'text-x-generic.png', 'unknown.png', 'video-x-generic.png', 'main.css', 'application-pdf.png', 'image-x-generic.png', 'filedrag.js', 'progress.png']
 	for f in fileList:
-		fullDestPath = '/home/user/MyDocs/wifitrans/' + f
+		fullDestPath = '/home/user/MyDocs/.wifitrans/' + f
 		fullSourcePath = '/opt/wifitrans/file/' + f
 		if not os.path.exists(fullDestPath):
 			shutil.copyfile(fullSourcePath, fullDestPath)
