@@ -307,8 +307,6 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 							print "directory already exists?"
 						except:
 							print "fail to create directory" + mkdirpath
-						finally:
-							print "directory" + mkdirpath + "created"
 					elif self.path.endswith('/'):
 						self.listDirectory(self.showPath)
 					else:
