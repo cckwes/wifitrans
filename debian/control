@@ -1,5 +1,5 @@
 Source: wifitrans
-Section: user/other
+Section: user/network
 Priority: optional
 Maintainer: linux4us <cckwes@gmail.com>
 Build-Depends: debhelper (>= 5), libqt4-dev

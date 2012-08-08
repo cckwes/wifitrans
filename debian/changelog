@@ -1,3 +1,9 @@
+wifitrans (0.1.2) unstable; urgency=low
+
+  - Added create folder option
+
+ -- linux4us <cckwes@gmail.com>  Wed, 8 Aug 2012 20:02:57 +0800
+ 
 wifitrans (0.1.1) unstable; urgency=low
 
   - Added IP address checking for file upload, prevent file upload from un-authorized IP.

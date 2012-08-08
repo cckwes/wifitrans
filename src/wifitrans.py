@@ -189,7 +189,7 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			
 		disp = cStringIO.StringIO()
 		disp.write('<!DOCTYPE html>\n<html><head><title>%s</title>\n<link rel="stylesheet" href="/.wifitrans/main.css" type="text/css" />\n</head>\n\
-		<body>\n<header>\n<div id="title">\n<h1>%s</h1>\n</div>\n</header>\n<article>\n<section class="archive">\n<a href="?method=a">Download folder as a zip file</a>\n</section>\n<ul>\n' % (dirpath,dirpath))
+		<body>\n<header>\n<div id="title">\n<h1>%s</h1>\n</div>\n</header>\n<article>\n<section class="archive">\n<a href="?method=a">Download folder as a zip file</a>\n</section>\n<section class="archive">\n<form action="" method="get">\n<input type="text" name="directory" placeholder="directory">\n<input type="hidden" name="method" value="d">\n<input type="submit" value="Create Directory">\n</form>\n</section>\n<ul>\n' % (dirpath,dirpath))
 		for r in listing:
 			mimetype, _ = mimetypes.guess_type(r)
 			#print r
@@ -299,8 +299,10 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 						os.remove(filepath)
 					elif self.qs['method'] == ['d/']:
 						#create a directory
-						mkdirname = self.qs['directory']
+						mkdirname = str(self.qs['directory']).strip("['']")
+						#print mkdirname
 						mkdirpath = "/home/user/MyDocs" + self.showPath + mkdirname
+						print mkdirpath
 						try:
 							os.mkdir(mkdirpath)
 						except OSError:
@@ -309,6 +311,9 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 							print "fail to create directory" + mkdirpath
 						finally:
 							print "directory" + mkdirpath + "created"
+							self.send_response(301)
+							self.send_header("Location", (self.showPath + mkdirname))
+							self.end_headers()
 					elif self.path.endswith('/'):
 						self.listDirectory(self.showPath)
 					else:

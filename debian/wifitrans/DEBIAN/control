@@ -1,10 +1,10 @@
 Package: wifitrans
-Version: 0.1.1
+Version: 0.1.2
 Architecture: armel
 Maintainer: linux4us <cckwes@gmail.com>
 Installed-Size: 372
 Depends: python, python-pyside.qtcore, python-pyside.qtgui, python-pyside.qtdeclarative
-Section: user/other
+Section: user/network
 Priority: optional
 Homepage: http://blog.linux4us.org
 Description: A wifi file transfer utility for MeeGo
