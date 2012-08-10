@@ -188,7 +188,7 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			listing.insert(0, '..')
 			
 		disp = cStringIO.StringIO()
-		disp.write('<!DOCTYPE html>\n<html><head><title>%s</title>\n<link rel="stylesheet" href="/.wifitrans/main.css" type="text/css" />\n</head>\n\
+		disp.write('<!DOCTYPE html>\n<html><head><meta charset="utf-8" /><title>%s</title>\n<link rel="stylesheet" href="/.wifitrans/main.css" type="text/css" />\n</head>\n\
 		<body>\n<header>\n<div id="title">\n<h1>%s</h1>\n</div>\n</header>\n<article>\n<section class="archive">\n<a href="?method=a">Download folder as a zip file</a>\n</section>\n<section class="archive">\n<form action="" method="get">\n<input type="text" name="directory" placeholder="directory">\n<input type="hidden" name="method" value="d">\n<input type="submit" value="Create Directory">\n</form>\n</section>\n<ul>\n' % (dirpath,dirpath))
 		for r in listing:
 			mimetype, _ = mimetypes.guess_type(r)

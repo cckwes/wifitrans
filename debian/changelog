@@ -1,6 +1,7 @@
 wifitrans (0.1.2) unstable; urgency=low
 
   - Added create folder option
+  - Added utf-8 encoding to html
 
  -- linux4us <cckwes@gmail.com>  Wed, 8 Aug 2012 20:02:57 +0800
  
