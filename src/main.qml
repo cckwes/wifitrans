@@ -36,15 +36,15 @@ PageStackWindow {
 
         MenuLayout {
             MenuItem {
-                text: "Approved IP"
+                text: qsTr("Approved IP")
                 onClicked: openFile("WhiteList.qml");
             }
             MenuItem {
-                text: "Blocked IP"
+                text: qsTr("Blocked IP")
                 onClicked: openFile("BlackList.qml");
             }
             MenuItem {
-                text: (mainWindow.thumb) ? "Photo Thumbnail Enabled" : "Photo Thumbnail Disabled"
+                text: (mainWindow.thumb) ? qsTr("Photo Thumbnail Enabled") : qsTr("Photo Thumbnail Disabled")
                 onClicked: {
                     mainWindow.thumb = !mainWindow.thumb;
                     cControl.setPhotoThumb(mainWindow.thumb);
@@ -52,7 +52,7 @@ PageStackWindow {
             }
 
             MenuItem {
-                text: "About"
+                text: qsTr("About")
                 onClicked: openFile("AboutPage.qml");
             }
         }
