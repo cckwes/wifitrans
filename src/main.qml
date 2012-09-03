@@ -12,6 +12,7 @@ PageStackWindow {
     }
 
     property bool thumb: false;
+    property bool del: false;
 
     function openFile(file) {
         var component = Qt.createComponent(file)
@@ -26,7 +27,7 @@ PageStackWindow {
     ToolBarLayout {
         id: commonTools
         visible: false
-        ToolIcon { iconId: "toolbar-back"; onClicked: pageStack.pop(); }
+        ToolIcon {}
         ToolIcon { iconId: "toolbar-view-menu"; onClicked: commonMenu.open(); }
     }
 
@@ -55,6 +56,15 @@ PageStackWindow {
                 text: qsTr("About")
                 onClicked: openFile("AboutPage.qml");
             }
+            
+            MenuItem {
+                text: (mainWindow.del) ? qsTr("File Delete Enabled") : qsTr("File Delete Disabled")
+                onClicked: {
+                    mainWindow.del = !mainWindow.del;
+                    cControl.setDeleteEnabled(mainWindow.del);
+                }
+            }
+	      
         }
     }
 }

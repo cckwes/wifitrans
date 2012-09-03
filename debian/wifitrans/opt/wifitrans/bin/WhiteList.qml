@@ -5,7 +5,12 @@ Page {
     id: whiteListPage
     orientationLock: PageOrientation.LockPortrait
 
-    tools: commonTools
+    tools: ToolBarLayout {
+        ToolIcon {
+            iconId: "toolbar-back"
+            onClicked: pageStack.pop()
+        }
+    }
 
     Component.onCompleted: {
         reloadModel();

@@ -34,6 +34,7 @@ class centerClass(QObject):
 		self.showPhotoThumb = False
 		self.settings = QSettings("Linux4us", "WifiTrans")
 		self.customUP = self.getUsePassSettings()
+		self.enableDel = False
 		if self.customUP:
 			#custom user name and password
 			self.username = self.loadCustomUsername()
@@ -41,6 +42,13 @@ class centerClass(QObject):
 		else:
 			self.username = "n9user"
 			self.generatePassword()
+
+	def checkDeleteEnabled(self):
+		return self.enableDel
+
+	@Slot(bool)
+	def setDeleteEnabled(self, delen):
+		self.enableDel = delen
 
 	def checkBlackListed(self, ipAddr):
 		if str(ipAddr) in self.blackListedIP:
@@ -188,8 +196,28 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 			listing.insert(0, '..')
 			
 		disp = cStringIO.StringIO()
-		disp.write('<!DOCTYPE html>\n<html><head><meta charset="utf-8" /><title>%s</title>\n<link rel="stylesheet" href="/.wifitrans/main.css" type="text/css" />\n</head>\n\
-		<body>\n<header>\n<div id="title">\n<h1>%s</h1>\n</div>\n</header>\n<article>\n<section class="archive">\n<a href="?method=a">Download folder as a zip file</a>\n</section>\n<section class="archive">\n<form action="" method="get">\n<input type="text" name="directory" placeholder="directory">\n<input type="hidden" name="method" value="d">\n<input type="submit" value="Create Directory">\n</form>\n</section>\n<ul>\n' % (dirpath,dirpath))
+		disp.write('<!DOCTYPE html>\n<html><head><meta charset="utf-8" /><title>%s</title>\n<link rel="stylesheet" href="/.wifitrans/main.css" type="text/css" />\n<script language="javascript" type="text/javascript" src="/.wifitrans/jquery.min.js"></script>\n<script language="javascript" type="text/javascript" src="/.wifitrans/jquery.contextMenu.js"></script>\n<link rel="stylesheet" href="/.wifitrans/jquery.contextMenu.css" type="text/css">' % (dirpath))
+		
+		if cc.checkDeleteEnabled():
+			disp.write('<script type="text/javascript">\n\
+			$(document).ready( function() {\n\
+			\n\
+			    $(".item").contextMenu({\n\
+				menu: "myMenu"\n\
+			    },\n\
+				function(action, el, pos) {\n\
+					if (confirm("confirm delete file/folder " + $.trim($(el).text()) + "?")) {\n\
+						console.log("confirm delete " + $.trim($(el).text()));\n\
+						console.log("current location: " + window.location);\n\
+						window.location += "?file=" + $.trim($(el).text()) + "&method=r";\n\
+					} else\n\
+						console.log("na");\n\
+			    });\n\
+			});\n\
+			</script>\n')
+		
+		disp.write('</head>\n\
+		<body>\n<header>\n<div id="title">\n<h1>%s</h1>\n</div>\n</header>\n<article>\n<section class="archive">\n<a href="?method=a">Download folder as a zip file</a>\n</section>\n<section class="archive">\n<form action="" method="get">\n<input type="text" name="directory" placeholder="directory">\n<input type="hidden" name="method" value="d">\n<input type="submit" value="Create Directory">\n</form>\n</section>\n<ul>\n' % (dirpath))
 		for r in listing:
 			mimetype, _ = mimetypes.guess_type(r)
 			#print r
@@ -233,7 +261,7 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 		</fieldset>\n\
 		</form>\n\
 		</div>\n<div id="progress"></div>\n<div id="messages">\n<p>Status Messages</p>\n</div>\n\
-		</article>\n<script src="/.wifitrans/filedrag.js"></script>\n</body>\n</html>')
+		</article>\n<script src="/.wifitrans/filedrag.js"></script><ul id="myMenu" class="contextMenu">\n<li class="delete"><a href="#delete">Delete</a></li>\n</ul>\n</body>\n</html>')
 		disp.seek(0)
 		self.send_response(200)
 		self.send_header('Content-type', 'text/html')
@@ -308,16 +336,40 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 						except OSError:
 							print "directory already exists?"
 						except:
-							print "fail to create directory" + mkdirpath
+							print "fail to create directory " + mkdirpath
 						finally:
-							print "directory" + mkdirpath + "created"
+							print "directory" + mkdirpath + " created"
 							self.send_response(301)
 							self.send_header("Location", (self.showPath + mkdirname))
 							self.end_headers()
+					elif self.qs['method'] == ['r/']:
+						rmname = str(self.qs['file']).strip("['']")
+						fullrmPath = "/home/user/MyDocs" + self.showPath + rmname
+						print fullrmPath
+						if os.path.exists(fullrmPath):
+							if os.path.isdir(fullrmPath):
+								#remove directory recursively
+								shutil.rmtree(fullrmPath)
+								print fullrmPath + " removed"
+								self.send_response(301)
+								self.send_header("Location", self.showPath)
+								self.end_headers()
+							else:
+								#remove file
+								os.remove(fullrmPath)
+								print fullrmPath + " removed"
+								self.send_response(301)
+								self.send_header("Location", self.showPath)
+								self.end_headers()
+						#else:
+							#self.send_response(301)
+							#self.send_header("Location", self.showPath)
+							#self.end_headers()
 					elif self.path.endswith('/'):
 						self.listDirectory(self.showPath)
 					else:
 						SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+						
 				except KeyError:
 					if self.path.endswith('/'):
 						self.listDirectory(self.showPath)
@@ -450,7 +502,7 @@ if __name__== "__main__":
 		print("Directory /home/user/MyDocs/.wifitrans created")
 	
 	#copy files
-	fileList = ['application-x-compress.png', 'audio-x-generic.png', 'inode-directory.png', 'text-x-generic.png', 'unknown.png', 'video-x-generic.png', 'main.css', 'application-pdf.png', 'image-x-generic.png', 'filedrag.js', 'progress.png']
+	fileList = ['application-x-compress.png', 'audio-x-generic.png', 'inode-directory.png', 'text-x-generic.png', 'unknown.png', 'video-x-generic.png', 'main.css', 'application-pdf.png', 'image-x-generic.png', 'filedrag.js', 'progress.png', 'jquery.min.js', 'jquery.contextMenu.js', 'jquery.contextMenu.css', 'delete.png']
 	for f in fileList:
 		fullDestPath = '/home/user/MyDocs/.wifitrans/' + f
 		fullSourcePath = '/opt/wifitrans/file/' + f

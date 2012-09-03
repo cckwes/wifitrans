@@ -1,3 +1,18 @@
+wifitrans (0.2.1) unstable; urgency=low
+
+  - Fixed the "still can delete without page refresh after delete disabled" bug
+
+ -- linux4us <cckwes@gmail.com>  Mon, 3 Sep 2012 16:50:23 +0800
+
+wifitrans (0.2.0) unstable; urgency=low
+
+  - Added remove file and folder feature
+  - Fix the zombie back button on main page
+  - Updated toolbar for every page
+  - Added enable/disable delete option on menu
+
+ -- linux4us <cckwes@gmail.com>  Wed, 29 Aug 2012 19:08:29 +0800
+
 wifitrans (0.1.2) unstable; urgency=low
 
   - Added create folder option

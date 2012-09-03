@@ -30,7 +30,7 @@ Page {
 
     function showThing(msg) {
         appWindow.clientIP = msg;
-        clientIPQuery.message = "Approve IP Address " + msg + "?";
+        clientIPQuery.message = qsTr("Approve IP Address ") + msg + "?";
         clientIPQuery.open();
         console.log("request: " + msg);
     }
@@ -52,7 +52,7 @@ Page {
 
     Label {
         id: wifiLabel
-        text: "Wifi Server"
+        text: qsTr("Wifi Server")
         anchors.left: parent.left
         anchors.leftMargin: 20
         anchors.top: headerRect.bottom
@@ -79,7 +79,7 @@ Page {
 
     Label {
         id: ipLabel
-        text: "Point your browser to this address for accessing the files"
+        text: qsTr("Point your browser to this address for accessing the files")
 	width: parent.width - 40
         anchors.top: wifiSwitch.bottom
         anchors.topMargin: 50
@@ -103,7 +103,7 @@ Page {
     
     Label {
         id: userLabel
-        text: "Username:"
+        text: qsTr("Username:")
 	anchors.top: ipAddrLabel.bottom
 	anchors.topMargin: 20
 	anchors.left: parent.left
@@ -124,7 +124,7 @@ Page {
     
     Label {
         id: passLabel
-        text: "Password:"
+        text: qsTr("Password:")
 	anchors.top: usernameLabel.bottom
 	anchors.topMargin: 20
 	anchors.left: parent.left
@@ -148,7 +148,7 @@ Page {
         anchors.top: passwordLabel.bottom
         anchors.topMargin: 40
         anchors.horizontalCenter: parent.horizontalCenter
-        text: (appWindow.custom) ? "Edit Username, Password" : "Generate new Password"
+        text: (appWindow.custom) ? qsTr("Edit Username, Password") : qsTr("Generate new Password")
 
         onClicked: {
             if (appWindow.custom) {
@@ -169,7 +169,7 @@ Page {
         checkedButton: (appWindow.custom) ? customBtn : generateBtn
         Button {
             id: customBtn
-            text: "Custom"
+            text: qsTr("Custom")
             onClicked: {
                 appWindow.custom = true;
                 cControl.loadCustom();
@@ -180,7 +180,7 @@ Page {
         }
         Button {
             id: generateBtn
-            text: "Generated"
+            text: qsTr("Generated")
             onClicked: {
                 appWindow.custom = false;
                 cControl.unloadCustom();
@@ -218,7 +218,7 @@ Page {
                 width: parent.width
 
                 Label {
-                    text: "Username"
+                    text: qsTr("Username")
                 }
 
                 TextField {
@@ -232,7 +232,7 @@ Page {
                 }
 
                 Label {
-                    text: "Password"
+                    text: qsTr("Password")
                 }
 
                 TextField {
@@ -267,7 +267,7 @@ Page {
     QueryDialog {
         id: clientIPQuery
         icon: "image://theme/icon-l-installing"
-        titleText: "Client IP Approval"
+        titleText: qsTr("Client IP Approval")
         acceptButtonText: "Approve"
         rejectButtonText: "Reject"
 
