@@ -1,0 +1,13 @@
+WifiTrans is a file transfer over wireless network using a python http server for MeeGo and Maemo.
+
+Current latest version is v0.2.1 with the following features:
+
+- Download files from phone
+- Upload files to phone
+- Delete files or directories from phone
+- Create directory on phone
+- Folder archive the folder on phone
+- Basic http authentication
+- IP address white list and black list
+- Enable/Disable client delete file
+
