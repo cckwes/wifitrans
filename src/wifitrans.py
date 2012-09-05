@@ -362,10 +362,16 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 									self.send_response(301)
 									self.send_header("Location", self.showPath)
 									self.end_headers()
-							#else:
-								#self.send_response(301)
-								#self.send_header("Location", self.showPath)
-								#self.end_headers()
+							else:
+								print "file does not exists"
+								self.send_response(301)
+								self.send_header("Location", self.showPath)
+								self.end_headers()
+						else:
+							print "file removal disabled"
+							self.send_response(301)
+							self.send_header("Location", self.showPath)
+							self.end_headers()
 					elif self.path.endswith('/'):
 						self.listDirectory(self.showPath)
 					else:

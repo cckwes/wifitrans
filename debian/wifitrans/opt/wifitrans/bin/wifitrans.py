@@ -343,28 +343,35 @@ class HandlerClass(SimpleHTTPServer.SimpleHTTPRequestHandler):
 							self.send_header("Location", (self.showPath + mkdirname))
 							self.end_headers()
 					elif self.qs['method'] == ['r/']:
-						rmname = str(self.qs['file']).strip("['']")
-						fullrmPath = "/home/user/MyDocs" + self.showPath + rmname
-						print fullrmPath
-						if os.path.exists(fullrmPath):
-							if os.path.isdir(fullrmPath):
-								#remove directory recursively
-								shutil.rmtree(fullrmPath)
-								print fullrmPath + " removed"
-								self.send_response(301)
-								self.send_header("Location", self.showPath)
-								self.end_headers()
+						if cc.checkDeleteEnabled():
+							rmname = str(self.qs['file']).strip("['']")
+							fullrmPath = "/home/user/MyDocs" + self.showPath + rmname
+							print fullrmPath
+							if os.path.exists(fullrmPath):
+								if os.path.isdir(fullrmPath):
+									#remove directory recursively
+									shutil.rmtree(fullrmPath)
+									print fullrmPath + " removed"
+									self.send_response(301)
+									self.send_header("Location", self.showPath)
+									self.end_headers()
+								else:
+									#remove file
+									os.remove(fullrmPath)
+									print fullrmPath + " removed"
+									self.send_response(301)
+									self.send_header("Location", self.showPath)
+									self.end_headers()
 							else:
-								#remove file
-								os.remove(fullrmPath)
-								print fullrmPath + " removed"
+								print "file does not exists"
 								self.send_response(301)
 								self.send_header("Location", self.showPath)
 								self.end_headers()
-						#else:
-							#self.send_response(301)
-							#self.send_header("Location", self.showPath)
-							#self.end_headers()
+						else:
+							print "file removal disabled"
+							self.send_response(301)
+							self.send_header("Location", self.showPath)
+							self.end_headers()
 					elif self.path.endswith('/'):
 						self.listDirectory(self.showPath)
 					else:

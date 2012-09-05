@@ -1,9 +1,9 @@
-c00f6382f27dc51ff16704647986e9f6  opt/wifitrans/bin/AboutPage.qml
+33abf2fe86b46677bd2377b2d11e3843  opt/wifitrans/bin/AboutPage.qml
 6c5ba6f569274fea1149cb3fb8545b54  opt/wifitrans/bin/BlackList.qml
 3810020cf4ff5e3ba90b2f0995e291b3  opt/wifitrans/bin/MainPage.qml
 bee41ce6432ba3cba800747813ae8c86  opt/wifitrans/bin/WhiteList.qml
 478f63717ab0d5de687fb23c743d2d49  opt/wifitrans/bin/main.qml
-98658e57f36ba93ee7a0b3a5a8fa0fdb  opt/wifitrans/bin/wifitrans.py
+2bdef9947964fe09e7fac8b37b1dbe40  opt/wifitrans/bin/wifitrans.py
 66c84d4218f15f7fb0b7788bdb15aa13  opt/wifitrans/file/application-pdf.png
 fd143237d8058fbb1c8a6b5c12c36b4a  opt/wifitrans/file/application-x-compress.png
 822ab31e0964788fd1161533f21f5050  opt/wifitrans/file/audio-x-generic.png
@@ -21,6 +21,6 @@ ff56aabf6d351fa731a864a545d68995  opt/wifitrans/file/text-x-generic.png
 c1680c501af6059beaca7e267859d3ae  opt/wifitrans/file/video-x-generic.png
 faa8ebcf12276653ac1de814da394a84  opt/wifitrans/file/wifitrans.png
 8e5bd78218dbaf493cd8c1b6c31ad0e3  usr/share/applications/wifitrans.desktop
-d4ccb207279b15d83fa6fa81db507142  usr/share/doc/wifitrans/changelog.gz
+80ef46d2eb7c4c242b92f1da025f933a  usr/share/doc/wifitrans/changelog.gz
 45c80ba4acbba78f0812af8805c575f3  usr/share/doc/wifitrans/copyright
 a90faab4c51f8fb38c23ccf42ccd7d0f  usr/share/icons/hicolor/80x80/apps/wifitrans.png
